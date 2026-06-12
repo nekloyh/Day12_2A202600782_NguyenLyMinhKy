@@ -8,7 +8,6 @@ services:
     dockerfilePath: ./06-lab-complete/Dockerfile
     dockerContext: ./06-lab-complete
     healthCheckPath: /ready
-    maxShutdownDelaySeconds: 30
     autoDeployTrigger: commit
     envVars:
       - key: AGENT_API_KEY

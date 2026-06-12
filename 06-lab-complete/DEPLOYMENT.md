@@ -6,7 +6,7 @@ Vietnamese-Korean Travel Honorific Translator
 
 ## Public URL
 
-`https://YOUR-RENDER-SERVICE.onrender.com`
+https://vietnamese-korean-travel-translator.onrender.com
 
 ## Platform
 
@@ -15,15 +15,15 @@ Render
 ## Test Commands
 
 ```bash
-curl https://YOUR-RENDER-SERVICE.onrender.com/health
-curl https://YOUR-RENDER-SERVICE.onrender.com/ready
+curl https://vietnamese-korean-travel-translator.onrender.com/health
+curl https://vietnamese-korean-travel-translator.onrender.com/ready
 
-curl -X POST https://YOUR-RENDER-SERVICE.onrender.com/translate \
+curl -X POST https://vietnamese-korean-travel-translator.onrender.com/translate \
   -H "X-API-Key: YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"user_id":"demo","text":"Cho tôi xem thực đơn","situation":"restaurant"}'
 
-curl https://YOUR-RENDER-SERVICE.onrender.com/usage/demo \
+curl https://vietnamese-korean-travel-translator.onrender.com/usage/demo \
   -H "X-API-Key: YOUR_KEY"
 ```
 
@@ -42,8 +42,14 @@ curl https://YOUR-RENDER-SERVICE.onrender.com/usage/demo \
 - `MAX_OUTPUT_TOKENS=600`
 - `HISTORY_LIMIT=20`
 
+## Deployment Result
+
+- Render service status: Live
+- Readiness endpoint: `200 OK`
+- Translation provider: OpenAI
+- Model: `gpt-4o-mini`
+- Token usage is tracked in Redis.
+
 ## Evidence
 
-- Deployment dashboard: `screenshots/render-dashboard.png`
-- Health check: `screenshots/health.png`
-- Translation result: `screenshots/translation.png`
+- [Production readiness and translation result](screenshot/ex6-deployment-redacted.png)

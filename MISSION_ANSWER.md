@@ -58,7 +58,7 @@ Client -> Nginx -> Agent -> Redis
 
 ## Part 3: Cloud Deployment
 
-### Exercise 3.1: Railway deployment
+### Exercise 3.1: Cloud deployment with Render
 - URL: https://day12-ex3-782.onrender.com
 - Screenshot: [Log deployment](03-cloud-deployment/screenshot/log.png)
 - Health check: Passed
@@ -95,5 +95,7 @@ Client -> Nginx -> Agent -> Redis
 - Có API key, rate limit `10 request/phút`, token guard global và per-user `100.000 token/tháng`.
 - Lịch sử dịch lưu trong Redis; có health check, readiness và structured logging.
 - Docker multi-stage chạy non-root; deploy bằng Render Blueprint.
-- URL: `https://YOUR-RENDER-SERVICE.onrender.com`
+- URL: https://vietnamese-korean-travel-translator.onrender.com
+- Deployment status: Live; `/ready` và `/translate` trả `200`.
+- Screenshot: [Production readiness and OpenAI translation](06-lab-complete/screenshot/ex6-deployment-redacted.png)
 - Evidence: [Deployment guide](06-lab-complete/DEPLOYMENT.md)

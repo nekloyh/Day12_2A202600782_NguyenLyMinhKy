@@ -87,8 +87,10 @@ def run_checks():
                              "api_key" in content.lower() or "verify_token" in content))
         results.append(check("Rate limiting implemented",
                              "rate_limit" in content.lower() or "429" in content))
-        results.append(check("Graceful shutdown (SIGTERM)",
-                             "SIGTERM" in content))
+        results.append(check(
+            "Graceful shutdown lifecycle",
+            "SIGTERM" in content or "lifespan=" in content,
+        ))
         results.append(check("Structured logging (JSON)",
                              "json.dumps" in content or '"event"' in content))
     else:

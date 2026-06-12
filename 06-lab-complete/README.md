@@ -1,100 +1,66 @@
-# Lab 12 — Complete Production Agent
+# Vietnamese-Korean Travel Honorific Translator
 
-Kết hợp TẤT CẢ những gì đã học trong 1 project hoàn chỉnh.
+REST API dịch các câu tiếng Việt thường gặp trong du lịch sang tiếng Hàn trang
+trọng. Mỗi kết quả gồm bản dịch, phiên âm, mức kính ngữ, giải thích ngữ pháp và
+ghi chú văn hóa.
 
-## Checklist Deliverable
+## Tính năng
 
-- [x] Dockerfile (multi-stage, < 500 MB)
-- [x] docker-compose.yml (agent + redis)
-- [x] .dockerignore
-- [x] Health check endpoint (`GET /health`)
-- [x] Readiness endpoint (`GET /ready`)
-- [x] API Key authentication
-- [x] Rate limiting
-- [x] Cost guard
-- [x] Config từ environment variables
-- [x] Structured logging
-- [x] Graceful shutdown
-- [x] Public URL ready (Railway / Render config)
+- Ngữ cảnh: khách sạn, nhà hàng, giao thông, mua sắm và khẩn cấp.
+- API key authentication.
+- Sliding-window rate limit 10 request/phút/user.
+- OpenAI `gpt-4o-mini` với Structured Outputs.
+- Token guard 100.000 token/tháng cho toàn project và mỗi user, tính cả input/output.
+- Lịch sử trong Redis, fallback memory khi chạy không có Redis.
+- Health/readiness endpoints, structured logging và graceful shutdown.
+- Multi-stage Docker image, non-root runtime và Render Blueprint.
 
----
-
-## Cấu Trúc
-
-```
-06-lab-complete/
-├── app/
-│   ├── main.py         # Entry point — kết hợp tất cả
-│   ├── config.py       # 12-factor config
-│   ├── auth.py         # API Key + JWT
-│   ├── rate_limiter.py # Rate limiting
-│   └── cost_guard.py   # Budget protection
-├── Dockerfile          # Multi-stage, production-ready
-├── docker-compose.yml  # Full stack
-├── railway.toml        # Deploy Railway
-├── render.yaml         # Deploy Render
-├── .env.example        # Template
-├── .dockerignore
-└── requirements.txt
-```
-
----
-
-## Chạy Local
+## Chạy local
 
 ```bash
-# 1. Setup
 cp .env.example .env
-
-# 2. Chạy với Docker Compose
-docker compose up
-
-# 3. Test
-curl http://localhost/health
-
-# 4. Lấy API key từ .env, test endpoint
-API_KEY=$(grep AGENT_API_KEY .env | cut -d= -f2)
-curl -H "X-API-Key: $API_KEY" \
-     -X POST http://localhost/ask \
-     -H "Content-Type: application/json" \
-     -d '{"question": "What is deployment?"}'
+# Điền OPENAI_API_KEY và AGENT_API_KEY trong .env, không commit file này.
+docker compose up --build
 ```
 
----
-
-## Deploy Railway (< 5 phút)
+Test:
 
 ```bash
-# Cài Railway CLI
-npm i -g @railway/cli
+curl http://localhost:8000/health
 
-# Login và deploy
-railway login
-railway init
-railway variables set OPENAI_API_KEY=sk-...
-railway variables set AGENT_API_KEY=your-secret-key
-railway up
+curl -X POST http://localhost:8000/translate \
+  -H "X-API-Key: YOUR_AGENT_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"demo","text":"Tôi muốn đặt phòng","situation":"hotel"}'
 
-# Nhận public URL!
-railway domain
+curl -H "X-API-Key: YOUR_AGENT_API_KEY" \
+  http://localhost:8000/history/demo
+
+curl -H "X-API-Key: YOUR_AGENT_API_KEY" \
+  http://localhost:8000/usage/demo
 ```
 
----
+## Chạy không dùng Docker
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+AGENT_API_KEY=dev-translation-key uvicorn app.main:app --reload
+```
 
 ## Deploy Render
 
-1. Push repo lên GitHub
-2. Render Dashboard → New → Blueprint
-3. Connect repo → Render đọc `render.yaml`
-4. Set secrets: `OPENAI_API_KEY`, `AGENT_API_KEY`
-5. Deploy → Nhận URL!
+1. Push repository lên GitHub.
+2. Render Dashboard -> New -> Blueprint.
+3. Chọn repository và nhập Blueprint path `06-lab-complete/render.yaml`.
+4. Nhập `OPENAI_API_KEY` và một `AGENT_API_KEY` mạnh khi Render yêu cầu.
+5. Không dùng giá trị mẫu `dev-translation-key` trên production.
+6. Test `/health`, `/translate`, `/history/{user_id}` và `/usage/{user_id}`.
 
----
+Blueprint tạo cả Web Service và Render Key Value. `REDIS_URL` được nối tự động,
+vì vậy history, rate limit và token guard dùng chung giữa các instance.
 
-## Kiểm Tra Production Readiness
-
-```bash
-python check_production_ready.py
-```
-
-Script này kiểm tra tất cả items trong checklist và báo cáo những gì còn thiếu.
+Render Key Value free dùng `persistenceMode: off`. Dữ liệu quota có thể reset
+nếu dịch vụ Redis được tạo lại. Muốn guardrail 100.000 token bền vững tuyệt đối,
+hãy dùng Key Value plan có persistence; OpenAI billing alerts chỉ nên là lớp cảnh báo bổ sung.

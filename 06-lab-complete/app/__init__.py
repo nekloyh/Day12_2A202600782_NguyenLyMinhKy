@@ -1,0 +1,1 @@
+"""Korean travel translator application."""

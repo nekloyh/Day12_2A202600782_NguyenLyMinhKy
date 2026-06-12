@@ -1,26 +1,23 @@
-version: "3.9"
-
 services:
-  agent:
+  translator:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - ENVIRONMENT=staging
-      - APP_NAME=Production AI Agent
-      - REDIS_URL=redis://redis:6379/0
-    env_file:
-      - .env.local
+      AGENT_API_KEY: ${AGENT_API_KEY:-dev-translation-key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      REQUIRE_OPENAI: ${REQUIRE_OPENAI:-false}
+      REQUIRE_REDIS: ${REQUIRE_REDIS:-true}
+      REDIS_URL: redis://redis:6379/0
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-10}
+      MONTHLY_TOKEN_LIMIT: ${MONTHLY_TOKEN_LIMIT:-100000}
+      USER_MONTHLY_TOKEN_LIMIT: ${USER_MONTHLY_TOKEN_LIMIT:-100000}
+      MAX_OUTPUT_TOKENS: ${MAX_OUTPUT_TOKENS:-600}
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
     restart: unless-stopped
 
   redis:
@@ -28,6 +25,7 @@ services:
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 5s
       timeout: 3s
-      retries: 3
+      retries: 5
+    restart: unless-stopped

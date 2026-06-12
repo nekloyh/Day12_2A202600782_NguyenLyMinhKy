@@ -1,23 +1,52 @@
 services:
   - type: web
-    name: ai-agent-production
+    name: vietnamese-korean-travel-translator
     runtime: docker
+    plan: free
     region: singapore
-    plan: starter
-    healthCheckPath: /health
-    autoDeploy: true
+    rootDir: 06-lab-complete
+    dockerfilePath: ./06-lab-complete/Dockerfile
+    dockerContext: ./06-lab-complete
+    healthCheckPath: /ready
+    maxShutdownDelaySeconds: 30
+    autoDeployTrigger: commit
     envVars:
-      - key: ENVIRONMENT
-        value: production
-      - key: APP_VERSION
-        value: "1.0.0"
+      - key: AGENT_API_KEY
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: AGENT_API_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
-      - key: DAILY_BUDGET_USD
-        value: "5.0"
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: ENVIRONMENT
+        value: production
+      - key: REQUIRE_OPENAI
+        value: "true"
+      - key: REQUIRE_REDIS
+        value: "true"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: translator-history
+          property: connectionString
       - key: RATE_LIMIT_PER_MINUTE
+        value: "10"
+      - key: MONTHLY_TOKEN_LIMIT
+        value: "100000"
+      - key: USER_MONTHLY_TOKEN_LIMIT
+        value: "100000"
+      - key: MAX_OUTPUT_TOKENS
+        value: "600"
+      - key: PROMPT_TOKEN_RESERVE
+        value: "500"
+      - key: HISTORY_LIMIT
         value: "20"
+      - key: LOG_LEVEL
+        value: INFO
+
+  - type: keyvalue
+    name: translator-history
+    plan: free
+    region: singapore
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+    persistenceMode: off

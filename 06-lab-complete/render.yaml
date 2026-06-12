@@ -4,7 +4,6 @@ services:
     runtime: docker
     plan: free
     region: singapore
-    rootDir: 06-lab-complete
     dockerfilePath: ./06-lab-complete/Dockerfile
     dockerContext: ./06-lab-complete
     healthCheckPath: /ready
